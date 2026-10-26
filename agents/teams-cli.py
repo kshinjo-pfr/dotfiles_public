@@ -193,7 +193,7 @@ async def open_channel(cdp, team_name, channel_name=None):
                 const text = item.innerText?.trim().split('\\n')[0]?.trim();
                 if (!text) continue;
 
-                if (text === 'Teams とチャネル' || text === 'Teams and Channels') {{
+                if (text.startsWith('Teams とチャネル') || text.toLowerCase().startsWith('teams and channels')) {{
                     inTeams = true;
                     continue;
                 }}
