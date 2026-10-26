@@ -661,6 +661,27 @@ async def read_thread(cdp, query):
     click_result = await cdp.evaluate(f"""
         (() => {{
             const target = '{safe_query}';
+            // English UI: channel reply summaries are buttons with id rc-sum-cont-btn-<timestamp>
+            // labeled "N replies"; walk up to the post that owns the button.
+            let summaryBtn = null;
+            let summaryBtnLen = Infinity;
+            for (const b of document.querySelectorAll('button[id^="rc-sum-cont-btn-"]')) {{
+                let post = b.parentElement;
+                for (let i = 0; i < 15 && post; i++) {{
+                    if ((post.innerText || '').length > (b.innerText || '').length + 40) break;
+                    post = post.parentElement;
+                }}
+                const text = post ? post.innerText : '';
+                if (text && text.includes(target) && text.length < summaryBtnLen) {{
+                    summaryBtn = b;
+                    summaryBtnLen = text.length;
+                }}
+            }}
+            if (summaryBtn) {{
+                summaryBtn.scrollIntoView({{block: 'center'}});
+                summaryBtn.click();
+                return 'clicked_reply_summary_button';
+            }}
             // First try to find a clickable "N 件の返信" element near matching text
             const allEls = document.querySelectorAll('*');
             let threadButton = null;
@@ -730,6 +751,17 @@ async def read_thread(cdp, query):
         return
 
     await asyncio.sleep(3)
+
+    # The new client renders the open thread in a dedicated right rail; read it directly.
+    rail_text = await cdp.evaluate("""
+        (() => {
+            const rail = document.querySelector('[data-tid="right-rail-message-pane-body"]');
+            return rail ? rail.innerText : '';
+        })()
+    """)
+    if rail_text:
+        print(rail_text.replace('has context menu', '').strip())
+        return
 
     # Read thread panel content - it appears after the main channel content in the DOM
     result = await cdp.evaluate("""
