@@ -106,4 +106,4 @@ SLACK_CDP_URL=http://localhost:9325 python3 ~/slack-cli.py channels
 - `slack_search_public_and_private` で DM・プライベートチャネル・外部共有チャネル（Slack Connect）まで横断検索できる。キーワードは `keywords`、チャネルや日付は `filters`（`in:<#C...>`、`after:YYYY-MM-DD`）に分けて渡す。
 - 結果は既定で前後の文脈付きなので大きい。`response_format: "concise"` や `include_context: false` で絞る。
 - スレッド全体は `slack_read_thread`（`channel_id` と親の `message_ts`）、チャネル全体は `slack_read_channel` で読む。パーマリンクは `https://<ws>.slack.com/archives/<channel_id>/p<ts の小数点を除いた値>`。
-- チャネル名の検索は `slack_search_channels` だが、外部共有チャネルは出てこないことがある。その場合はメッセージ検索の結果から channel_id を拾う。
+- チャネル名の検索は `slack_search_channels`。既定は public チャネルだけなので、外部共有チャネル（多くは private）を探すときは `channel_types: "public_channel,private_channel"` を付ける。
