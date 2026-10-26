@@ -83,3 +83,9 @@ ssh -L 8085:localhost:8085 <host>
 - 画像・図形・埋め込みオブジェクトは非対応
 - 書式付きテキスト（太字・色など）はプレーンテキストとして読み取られる
 - ドキュメントの構造的な編集（見出し設定、書式変更等）は未実装
+
+## Google Meet の Gemini メモ
+
+- 会議後に「<会議名> - YYYY/MM/DD HH:MM JST - Gemini によるメモ」というタイトルの Google ドキュメントが主催者の Drive に作られる。同じ内容のメールが `gemini-notes@google.com` から届く（件名「メモ: 「<会議名>」（YYYY年MM月DD日）」）。
+- 探すときは Drive の `title contains 'Gemini'` と `modifiedTime` で絞るか、Gmail の `from:gemini-notes@google.com newer_than:1d` を使う。
+- 自動生成なので、担当や事実関係が食い違うことがある（例：「取り付け口はない」と「バッテリーを用意する」が同じメモに並ぶ）。決定事項は本人に確認する。参加者の表示名は Meet の表示名になるので、アカウント名と一致しないことがある。

@@ -56,3 +56,10 @@ gcalcli --calendar="Work" agenda
 ```
 
 エージェントから使う場合は `--nocolor --tsv` を付けるとパースしやすい。
+
+## Claude の Google Calendar コネクタを使う場合
+
+- 他人のカレンダーも `calendarId` にメールアドレスを渡せば読める（閲覧権限がある場合）。複数人の空き時間を突き合わせるときは、各人の `list_events` を同じ期間で取る。
+- 1 週間分でも出力が大きく、ファイルに退避されることが多い。JSON を python で読み、`start.dateTime`・`summary`・`location`・自分の `responseStatus` だけ抜き出す。`transparency: transparent` の予定は空き扱いでよい。
+- 出社場所は `eventType: ["WORKING_LOCATION"]` を指定して取る。未登録の人もいるので、会議の `location`（会議室名）からも推測し、確定できないときはそう伝える。
+- 会議室の空きは、会議室のリソースカレンダー ID（例: `c_...@resource.calendar.google.com`）で `list_events` すれば分かる。ID は既存予定の `attendees` に含まれている。

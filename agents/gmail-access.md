@@ -155,3 +155,10 @@ himalaya folder list
 添付ファイルの保存先はアカウント設定の `downloads-dir` で指定する（未指定なら `XDG_DOWNLOAD_DIR`）。`-d/--downloads-dir` で1回限り上書きできる。保存先ディレクトリは事前に存在している必要があり、自動作成はされない。ファイル名なしのパートは UUID 形式で保存される。
 
 エージェントから使う場合は `--output json` を付けると構造化データが得られる。
+
+## 運用の勘所
+
+- この環境（日本語 Gmail）のフォルダ名は日本語である。送信済みは `[Gmail]/送信済みメール`、全メールは `[Gmail]/すべてのメール`。`[Gmail]/Sent Mail` は存在しないので、設定の alias も実名に合わせる。送受信をまとめて探すときは `-f "[Gmail]/すべてのメール"` を使う。
+- 検索は `himalaya envelope list -f <folder> -s 50 "from apto.co.jp or to apto.co.jp"` のように書く。フォルダ名を間違えると `Unknown Mailbox` で失敗するので、先に `himalaya folder list` で確認する。
+- Google Meet の Gemini メモ（「メモ: 『会議名』」）は `会議メモ` フォルダに振り分けられている。メール本文は概要と次のステップだけで、詳細は「会議メモを開く」のリンク先の Google Docs にある。
+- カレンダー招待の承諾メール（「承諾: …」）から、社外との打合せの日付と相手を拾える。

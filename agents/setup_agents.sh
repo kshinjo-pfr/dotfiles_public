@@ -57,7 +57,7 @@ echo ""
 echo "=== Agent docs ==="
 AGENT_DOCS_DIR="$HOME/.config/agent-docs"
 mkdir -p "$AGENT_DOCS_DIR"
-for f in gmail-access.md gcal-access.md keep-access.md onenote-access.md gdocs-access.md teams-access.md slack-access.md; do
+for f in gmail-access.md gcal-access.md keep-access.md onenote-access.md gdocs-access.md teams-access.md slack-access.md work-tips.md; do
     src="$AGENTS_DIR/$f"
     dst="$AGENT_DOCS_DIR/$f"
     if [ -f "$src" ]; then

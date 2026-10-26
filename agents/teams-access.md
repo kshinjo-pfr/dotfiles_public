@@ -175,3 +175,41 @@ TEAMS_CDP_PORT=9324 TEAMS_VNC_DISPLAY=:6 TEAMS_VNC_PORT=5906 ~/teams-start.sh
 TEAMS_CDP_URL=http://localhost:9324 python3 ~/teams-cli.py chats
 ```
 - 大容量ファイル（100MB超）は base64 変換タイムアウトの可能性あり
+
+## DOM 操作の勘所（新クライアント・英語 UI）
+
+`teams-cli.py` のコマンドで足りないとき、CDP で直接 DOM を操作する際の知見である。UI の言語やバージョンで文言が変わるため、文言より `data-tid` を優先して使う。
+
+### サイドバーとチャネル
+
+- サイドバーは `[role="treeitem"]` の木構造で、`aria-level` が 1（セクション）/ 2（チャット・チーム）/ 3（チャネル）である。セクション見出しは英語 UI だと `Teams and channels`（c は小文字）になる。
+- 折りたたまれたチームは `aria-expanded="false"` なので、先にクリックして展開してから level 3 のチャネルを探す。
+- チャット一覧の `See more` は一度では全件展開されない。数回クリックする。1:1 チャットの表示名は相手のアカウント名（メールのローカル部など）になることがある。
+- メッセージ本体は `[data-tid="message-pane-body"] [data-tid="message-pane-list-viewport"]` 内にある。仮想スクロールで描画範囲外の投稿は DOM から消えるため、全履歴を取るときは `scrollTop` を少しずつ動かして重複を除きながら集める。
+
+### スレッド
+
+- 返信のある投稿には `N replies` ボタン（id `rc-sum-cont-btn-<ミリ秒タイムスタンプ>`）がある。クリックすると右側に `[data-tid="right-rail-message-pane-body"]` としてスレッドが開く。id のタイムスタンプは投稿時刻なので、並べ替えや追跡のキーに使える。
+- 返信のない投稿にスレッド返信するには、`Escape` を送り、マウスを一度別の場所へ動かしてから投稿の中央へ `mouseMoved` でホバーする。表示された `[data-tid="message-actions-threaded-reply"]` を押す。
+- 右パネルが開いたままだと、ホバーした別の投稿ではなく、開いているスレッドに書き込んでしまうことがある。開く前に `[data-tid="thread-list-pane-toggle-button"]` で閉じ、開いた後はスレッド先頭のテキストを照合してから入力する。
+- 返信欄は右パネル内の `[contenteditable="true"]` である。`Input.insertText` で入力し、改行は Shift+Enter を1回（2回だと空行が増える）、送信は Enter で行う。送信後にスレッド末尾を読み直して反映を確認する。
+
+### 外部への投稿の注意
+
+- 社外のゲストがいるチャネルへの投稿では、内部のファイル名・CI の実行 ID などの詳細や、人物の写った画像は控える。エージェントの権限分類器にも止められやすい。
+- 一度に大量の操作をすると時間がかかる（スレッド200件の取得で約30分）。新着の確認だけなら Graph API（teams-graph-access.md）の方が速い。
+
+### 書式付きの下書きを返信欄に入れる（送信しない）
+
+- ユーザーに確認してから送りたいときは、返信欄に下書きだけ入れて止める。投稿自体は Graph API の方が確実なので、下書きが要るときだけこの方法を使う。
+- リンクや箇条書きを保ったまま入れるには、返信欄に `paste` イベントを合成して `text/html` を渡す。Teams のエディタがそのまま取り込む。
+
+  ```js
+  const dt = new DataTransfer();
+  dt.setData('text/html', html); dt.setData('text/plain', 'draft');
+  editor.focus();
+  editor.dispatchEvent(new ClipboardEvent('paste', {clipboardData: dt, bubbles: true, cancelable: true}));
+  ```
+
+- `document.execCommand('insertHTML')` や `innerHTML` の代入は TrustedHTML の制約で例外になる。`navigator.clipboard.write` は CDP からだと「Document is not focused」で失敗する。
+- SharePoint のリンクはファイルカードに自動展開される。社外チームのファイルだと「アクセス権を付与する」が出るので、スクリーンショットで確認してユーザーに伝える。
