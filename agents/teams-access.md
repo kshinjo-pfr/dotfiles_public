@@ -76,6 +76,15 @@ python3 ~/teams-cli.py dump                               # ページ全テキ�
 
 組織のキーと名前は `~/.config/agent-tools/config.json` の `teams.orgs` で定義する。
 
+### 送信前の確認 (誤送信防止)
+
+Chrome は共有なので、前回の操作や人の操作で **組織 (テナント) や開いているチャットが変わっている** ことがある。外部テナントのチャットが開いたまま入力すると社外に送ってしまう。
+
+- 送信の直前に `python3 ~/teams-cli.py org <key>` で目的の組織に戻す。切替直後はディープリンクが効かないことがあるので、切替が終わってからチャットを開き直す。
+- 自前のスクリプトで入力する場合は、入力の直前に `document.title` (例: `チャット | <相手の名前> | Microsoft Teams`) に宛先名が含まれることを検証し、違えば中止する。
+- 切替後に「このアプリを使用するためのアクセス許可がありません」等のダイアログが出ていたら、閉じてから操作する。
+- bot (アプリ) との 1:1 チャットは `https://teams.microsoft.com/l/chat/0/0?users=28:<botAppId>` で開ける。
+
 ## MCP サーバー (Graph API 不要の外部テナント向け)
 
 `teams-cli.py` と同じロジックを MCP (Model Context Protocol) サーバーとしても提供している。
